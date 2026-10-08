@@ -1,0 +1,13 @@
+services:
+  quantlab:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      QUANTLAB_ENVIRONMENT: ${QUANTLAB_ENVIRONMENT:-development}
+    init: true
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp

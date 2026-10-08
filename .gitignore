@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Environments and local configuration
+.venv/
+.uv-cache/
+.uv-python/
+.pre-commit-cache/
+.env
+.env.*
+!config/environments/*.env
+
+# Packaging
+build/
+dist/
+*.egg-info/
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Runtime outputs; each directory keeps its .gitkeep file
+experiments/*
+!experiments/.gitkeep
+reports/*
+!reports/.gitkeep
+notebooks/.ipynb_checkpoints/
+
+# Logs and secrets
+*.log
+secrets/

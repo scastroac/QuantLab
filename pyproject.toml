@@ -1,0 +1,84 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "quantlab-ai"
+version = "0.1.0"
+description = "Infrastructure foundation for the QuantLab AI research platform."
+readme = "README.md"
+requires-python = ">=3.14,<3.15"
+license = { text = "Proprietary" }
+authors = [{ name = "Sergio Castro" }]
+dependencies = [
+    "pydantic>=2.12,<3",
+    "pydantic-settings>=2.12,<3",
+    "PyYAML>=6.0.2,<7",
+]
+
+[project.scripts]
+quantlab = "quantlab.__main__:main"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.18,<2",
+    "pre-commit>=4.3,<5",
+    "pytest>=8.4,<9",
+    "pytest-asyncio>=1.1,<2",
+    "pytest-cov>=7,<8",
+    "ruff>=0.14,<1",
+    "types-PyYAML>=6.0.12.20250915",
+]
+
+[tool.uv]
+package = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/quantlab"]
+
+[tool.pytest.ini_options]
+addopts = [
+    "--strict-config",
+    "--strict-markers",
+    "-ra",
+    "--cov=quantlab",
+    "--cov-branch",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-report=xml:coverage.xml",
+    "--cov-fail-under=85",
+]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.coverage.run]
+branch = true
+source = ["quantlab"]
+
+[tool.coverage.report]
+exclude_also = [
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "SIM", "RUF"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["quantlab"]
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+mypy_path = "src"
+packages = ["quantlab"]
+warn_unused_configs = true
+show_error_codes = true
+pretty = true
