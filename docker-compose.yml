@@ -1,13 +1,30 @@
 services:
+  db:
+    image: timescale/timescaledb:latest-pg16
+    environment:
+      POSTGRES_USER: quantlab
+      POSTGRES_PASSWORD: quantlab_password
+      POSTGRES_DB: quantlab_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - timescaledb-data:/var/lib/postgresql/data
+
   quantlab:
     build:
       context: .
       dockerfile: docker/Dockerfile
     environment:
       QUANTLAB_ENVIRONMENT: ${QUANTLAB_ENVIRONMENT:-development}
+      DATABASE_URL: postgresql://quantlab:quantlab_password@db:5432/quantlab_db
     init: true
     read_only: true
     security_opt:
       - no-new-privileges:true
     tmpfs:
       - /tmp
+    depends_on:
+      - db
+
+volumes:
+  timescaledb-data:
