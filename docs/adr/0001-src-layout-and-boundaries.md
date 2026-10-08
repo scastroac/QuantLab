@@ -22,3 +22,5 @@ adaptadores. `domain` y `application` no importarán desde `infrastructure` ni `
 - La raíz conserva carpetas operativas (`config`, `docs`, `docker`, `plugins`, etc.) sin convertirlas
   en paquetes Python.
 - Habrá algo más de código de composición, a cambio de dependencias observables y reemplazables.
+- La regla de dependencias se verifica automáticamente en
+  `tests/unit/architecture/test_import_boundaries.py`; una violación rompe CI.
