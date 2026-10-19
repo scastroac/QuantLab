@@ -41,7 +41,7 @@ addopts = [
     "--strict-config",
     "--strict-markers",
     "-ra",
-    "--cov=quantlab",
+    "--cov=src/quantlab",
     "--cov-branch",
     "--cov-report=term-missing:skip-covered",
     "--cov-report=xml:coverage.xml",
@@ -53,7 +53,7 @@ pythonpath = ["src"]
 
 [tool.coverage.run]
 branch = true
-source = ["quantlab"]
+source = ["src/quantlab"]
 
 [tool.coverage.report]
 exclude_also = [
