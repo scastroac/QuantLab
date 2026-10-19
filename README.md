@@ -1,11 +1,6 @@
 # QUANTLAB AI
 
-Base técnica para una plataforma autónoma de investigación cuantitativa. La versión `0.1.0`
-contiene exclusivamente la infraestructura transversal del Sprint 1: configuración, logging,
-eventos locales, descubrimiento de plugins, calidad, documentación y automatización.
-
-No contiene colectores, persistencia, PostgreSQL, FastAPI, datasets, modelos de IA, estrategias ni
-backtesting. Esas capacidades se incorporarán en sprints posteriores mediante puertos y adaptadores.
+Base técnica para una plataforma autónoma de investigación cuantitativa.
 
 ## Inicio rápido
 
@@ -59,8 +54,3 @@ inicia una base de datos ni otro servicio de infraestructura externo. Consulta l
 - [Decisiones de arquitectura](docs/adr/)
 - [Formato de plugins](docs/plugins.md)
 
-## Estado del proyecto
-
-Sprint 1 — infraestructura: base técnica completada y endurecida. El alcance continúa
-deliberadamente limitado para conservar una arquitectura hexagonal y reemplazable antes de añadir
-lógica de negocio.
