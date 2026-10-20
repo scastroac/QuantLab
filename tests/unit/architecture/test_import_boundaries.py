@@ -18,6 +18,7 @@ _TECHNOLOGIES = (
     "fastapi",
     "lightgbm",
     "psycopg",
+    "pyarrow",
     "redis",
     "sqlalchemy",
     "torch",

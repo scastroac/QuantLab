@@ -36,3 +36,25 @@ class DataStored(DomainEvent):
     symbol: Symbol
     interval: Interval
     timestamp: Timestamp
+
+
+@dataclass(frozen=True, kw_only=True, slots=True)
+class GapDetected(DomainEvent):
+    """Event emitted when a gap is detected in market data candles."""
+
+    symbol: Symbol
+    interval: Interval
+    expected_timestamp: Timestamp
+    actual_timestamp: Timestamp
+    missing_intervals: int
+
+
+@dataclass(frozen=True, kw_only=True, slots=True)
+class DataCleaned(DomainEvent):
+    """Event emitted when a sequence of market data candles is cleaned and normalized."""
+
+    symbol: Symbol
+    interval: Interval
+    total_input_count: int
+    total_output_count: int
+    duplicates_removed: int

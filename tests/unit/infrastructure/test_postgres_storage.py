@@ -99,3 +99,46 @@ async def test_postgres_storage_auto_connect_on_store() -> None:
         assert storage._pool is not None
         await storage.disconnect()
         assert storage._pool is None
+
+
+@pytest.mark.asyncio
+async def test_postgres_storage_get_candles() -> None:
+    mock_conn = AsyncMock()
+    mock_pool = MagicMock()
+
+    class MockAcquireContext:
+        async def __aenter__(self) -> AsyncMock:
+            return mock_conn
+
+        async def __aexit__(self, exc_type: object, exc_val: object, exc_tb: object) -> None:
+            pass
+
+    mock_pool.acquire.return_value = MockAcquireContext()
+    mock_pool.close = AsyncMock()
+
+    mock_conn.fetch.return_value = [
+        {
+            "time": datetime(2026, 1, 1, 0, 0, 0, tzinfo=UTC),
+            "open": "100.0",
+            "high": "105.0",
+            "low": "95.0",
+            "close": "102.0",
+            "volume": "1000.0",
+        }
+    ]
+
+    with patch("asyncpg.create_pool", new_callable=AsyncMock) as mock_create_pool:
+        mock_create_pool.return_value = mock_pool
+        storage = PostgresMarketDataStorage(dsn="postgresql://user:pass@localhost:5432/testdb")
+        symbol = Symbol("BTCUSD")
+        interval = Interval("1h")
+        start = Timestamp(datetime(2026, 1, 1, 0, 0, 0, tzinfo=UTC))
+        end = Timestamp(datetime(2026, 1, 2, 0, 0, 0, tzinfo=UTC))
+
+        candles = await storage.get_candles(symbol, interval, start, end)
+
+        assert len(candles) == 1
+        assert candles[0].symbol == symbol
+        assert candles[0].interval == interval
+        assert candles[0].ohlcv.close == Decimal("102.0")
+        await storage.disconnect()
