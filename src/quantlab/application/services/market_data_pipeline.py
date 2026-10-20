@@ -2,7 +2,7 @@
 
 import logging
 from datetime import UTC, datetime
-from decimal import Decimal
+from decimal import Decimal, DecimalException
 from typing import Any
 
 from quantlab.application.ports.event_bus import EventBus
@@ -30,7 +30,7 @@ class BasicMarketDataValidator(MarketDataValidator):
                 close=Decimal(str(raw_data["close"])),
                 volume=Decimal(str(raw_data["volume"])),
             )
-        except (KeyError, ValueError) as e:
+        except (KeyError, ValueError, DecimalException, TypeError) as e:
             raise ValueError(f"Invalid market data: {e}") from e
 
 

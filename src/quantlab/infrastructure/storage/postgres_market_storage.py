@@ -1,9 +1,16 @@
 """PostgreSQL based market data storage adapter."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import asyncpg  # type: ignore[import-untyped]
 
 from quantlab.application.ports.market import MarketDataStorage
 from quantlab.domain.value_objects.market import OHLCV, Interval, Symbol, Timestamp
+
+if TYPE_CHECKING:
+    pass
 
 
 class PostgresMarketDataStorage(MarketDataStorage):
@@ -33,15 +40,31 @@ class PostgresMarketDataStorage(MarketDataStorage):
                     );
                     """
                 )
-                # Ideally here we would also convert it to a hypertable for TimescaleDB:
-                # await conn.execute(
-                #     "SELECT create_hypertable('market_data', 'time', if_not_exists => TRUE);"
-                # )
+
+    async def disconnect(self) -> None:
+        """Close the connection pool."""
+        if self._pool is not None:
+            await self._pool.close()
+            self._pool = None
+
+    async def __aenter__(self) -> PostgresMarketDataStorage:
+        """Enter the async context and connect."""
+        await self.connect()
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: object | None,
+    ) -> None:
+        """Exit the async context and disconnect."""
+        await self.disconnect()
 
     async def store(
         self, symbol: Symbol, interval: Interval, timestamp: Timestamp, ohlcv: OHLCV
     ) -> None:
-        """Insert OHLCV data into the market_data table."""
+        """Insert OHLCV data into the market_data table preserving Decimal precision."""
         if self._pool is None:
             await self.connect()
 
@@ -63,9 +86,9 @@ class PostgresMarketDataStorage(MarketDataStorage):
                 timestamp.value,
                 symbol.name,
                 interval.name,
-                float(ohlcv.open),
-                float(ohlcv.high),
-                float(ohlcv.low),
-                float(ohlcv.close),
-                float(ohlcv.volume),
+                ohlcv.open,
+                ohlcv.high,
+                ohlcv.low,
+                ohlcv.close,
+                ohlcv.volume,
             )

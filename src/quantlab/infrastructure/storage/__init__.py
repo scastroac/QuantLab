@@ -1,1 +1,5 @@
-"""Reserved for artifact and data-lake storage adapters in a future sprint."""
+"""Storage infrastructure adapters."""
+
+from quantlab.infrastructure.storage.postgres_market_storage import PostgresMarketDataStorage
+
+__all__ = ["PostgresMarketDataStorage"]

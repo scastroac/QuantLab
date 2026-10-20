@@ -3,6 +3,7 @@
 import logging
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
+from decimal import Decimal
 
 import pytest
 
@@ -94,4 +95,4 @@ async def test_market_data_pipeline() -> None:
     stored_item = storage.stored[0]
     assert stored_item[0].name == "BTCUSD"
     assert stored_item[1].name == "1h"
-    assert stored_item[3].close == 102.0
+    assert stored_item[3].close == Decimal("102.0")

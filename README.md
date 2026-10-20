@@ -53,4 +53,3 @@ inicia una base de datos ni otro servicio de infraestructura externo. Consulta l
 - [Guía de desarrollo](docs/development.md)
 - [Decisiones de arquitectura](docs/adr/)
 - [Formato de plugins](docs/plugins.md)
-

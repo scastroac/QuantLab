@@ -1,7 +1,10 @@
 """CSV file based market data collector adapter."""
 
+from __future__ import annotations
+
 import csv
 from collections.abc import AsyncIterator
+from datetime import UTC, datetime
 from pathlib import Path
 
 from quantlab.application.ports.market import MarketDataCollector
@@ -17,23 +20,25 @@ class CsvMarketDataCollector(MarketDataCollector):
     async def collect(
         self, symbol: Symbol, interval: Interval, start: Timestamp, end: Timestamp
     ) -> AsyncIterator[dict[str, str | float | int]]:
-        """Yield rows from the CSV file that match the symbol and interval."""
+        """Yield rows from the CSV file that match the symbol, interval, and time range."""
         if not self.file_path.exists():
             raise FileNotFoundError(f"CSV file not found: {self.file_path}")
 
-        # In a real async implementation this would use aiofiles,
-        # but for simplicity in Sprint 2a we yield synchronously wrapped in async
         with self.file_path.open(mode="r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                # Basic mock logic, assuming CSV has 'symbol' and 'interval'
-                # and timestamp is within range (ignoring time filtering for now to keep it simple)
-                if row.get("symbol") == symbol.name and row.get("interval") == interval.name:
-                    yield {k: (float(v) if self._is_float(v) else v) for k, v in row.items()}
+                if row.get("symbol") != symbol.name or row.get("interval") != interval.name:
+                    continue
 
-    def _is_float(self, value: str) -> bool:
-        try:
-            float(value)
-            return True
-        except ValueError:
-            return False
+                ts_str = row.get("timestamp")
+                if ts_str is not None:
+                    try:
+                        row_dt = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+                        if row_dt.tzinfo is None:
+                            row_dt = row_dt.replace(tzinfo=UTC)
+                        if not (start.value <= row_dt <= end.value):
+                            continue
+                    except ValueError:
+                        continue
+
+                yield dict(row)
