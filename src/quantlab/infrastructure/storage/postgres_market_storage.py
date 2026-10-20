@@ -2,19 +2,24 @@
 
 from __future__ import annotations
 
+import logging
+from decimal import Decimal
 from typing import TYPE_CHECKING
 
 import asyncpg  # type: ignore[import-untyped]
 
 from quantlab.application.ports.market import MarketDataStorage
+from quantlab.domain.entities.market import Candle
 from quantlab.domain.value_objects.market import OHLCV, Interval, Symbol, Timestamp
 
 if TYPE_CHECKING:
     pass
 
+logger = logging.getLogger(__name__)
+
 
 class PostgresMarketDataStorage(MarketDataStorage):
-    """Stores validated market data in PostgreSQL/TimescaleDB."""
+    """Stores and queries validated market data in PostgreSQL/TimescaleDB."""
 
     def __init__(self, dsn: str) -> None:
         self.dsn = dsn
@@ -40,6 +45,14 @@ class PostgresMarketDataStorage(MarketDataStorage):
                     );
                     """
                 )
+                try:
+                    await conn.execute(
+                        "SELECT create_hypertable('market_data', 'time', if_not_exists => TRUE);"
+                    )
+                except Exception as exc:
+                    logger.debug(
+                        "TimescaleDB hypertable creation skipped or not supported: %s", exc
+                    )
 
     async def disconnect(self) -> None:
         """Close the connection pool."""
@@ -92,3 +105,42 @@ class PostgresMarketDataStorage(MarketDataStorage):
                 ohlcv.close,
                 ohlcv.volume,
             )
+
+    async def get_candles(
+        self, symbol: Symbol, interval: Interval, start: Timestamp, end: Timestamp
+    ) -> list[Candle]:
+        """Query candles from the market_data table in ascending chronological order."""
+        if self._pool is None:
+            await self.connect()
+
+        if self._pool is None:
+            raise RuntimeError("Failed to connect to database")
+
+        async with self._pool.acquire() as conn:
+            rows = await conn.fetch(
+                """
+                SELECT time, open, high, low, close, volume
+                FROM market_data
+                WHERE symbol = $1 AND interval = $2 AND time >= $3 AND time <= $4
+                ORDER BY time ASC;
+                """,
+                symbol.name,
+                interval.name,
+                start.value,
+                end.value,
+            )
+            return [
+                Candle(
+                    symbol=symbol,
+                    interval=interval,
+                    timestamp=Timestamp(row["time"]),
+                    ohlcv=OHLCV(
+                        open=Decimal(str(row["open"])),
+                        high=Decimal(str(row["high"])),
+                        low=Decimal(str(row["low"])),
+                        close=Decimal(str(row["close"])),
+                        volume=Decimal(str(row["volume"])),
+                    ),
+                )
+                for row in rows
+            ]

@@ -12,6 +12,7 @@ from quantlab.application.services.market_data_pipeline import (
     BasicMarketDataValidator,
     MarketDataPipeline,
 )
+from quantlab.domain.entities.market import Candle
 from quantlab.domain.events.market import DataCollected, DataStored, DataValidated
 from quantlab.domain.value_objects.market import OHLCV, Interval, Symbol, Timestamp
 from quantlab.infrastructure.messaging.local_event_bus import LocalEventBus
@@ -52,6 +53,15 @@ class MockStorage(MarketDataStorage):
         self, symbol: Symbol, interval: Interval, timestamp: Timestamp, ohlcv: OHLCV
     ) -> None:
         self.stored.append((symbol, interval, timestamp, ohlcv))
+
+    async def get_candles(
+        self, symbol: Symbol, interval: Interval, start: Timestamp, end: Timestamp
+    ) -> list[Candle]:
+        return [
+            Candle(symbol=s, interval=i, timestamp=t, ohlcv=o)
+            for s, i, t, o in self.stored
+            if s == symbol and i == interval and start.value <= t.value <= end.value
+        ]
 
 
 @pytest.mark.asyncio

@@ -1,8 +1,11 @@
 """Market application ports."""
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
 
+from quantlab.domain.entities.market import Candle
 from quantlab.domain.value_objects.market import OHLCV, Interval, Symbol, Timestamp
 
 
@@ -27,11 +30,18 @@ class MarketDataValidator(ABC):
 
 
 class MarketDataStorage(ABC):
-    """Port for persisting validated market data."""
+    """Port for persisting and querying validated market data."""
 
     @abstractmethod
     async def store(
         self, symbol: Symbol, interval: Interval, timestamp: Timestamp, ohlcv: OHLCV
     ) -> None:
         """Store the validated market data."""
+        pass
+
+    @abstractmethod
+    async def get_candles(
+        self, symbol: Symbol, interval: Interval, start: Timestamp, end: Timestamp
+    ) -> list[Candle]:
+        """Retrieve stored candles for a symbol, interval, and time range."""
         pass

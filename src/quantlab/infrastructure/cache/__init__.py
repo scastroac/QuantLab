@@ -1,1 +1,5 @@
-"""Reserved for a future cache adapter; no cache technology is configured in Sprint 1."""
+"""Cache infrastructure adapters."""
+
+from quantlab.infrastructure.cache.in_memory_cache import InMemoryMarketDataCache
+
+__all__ = ["InMemoryMarketDataCache"]
