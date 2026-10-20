@@ -16,6 +16,7 @@ _TECHNOLOGIES = (
     "asyncpg",
     "catboost",
     "fastapi",
+    "httpx",
     "lightgbm",
     "psycopg",
     "pyarrow",
